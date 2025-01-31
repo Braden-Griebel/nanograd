@@ -12,5 +12,5 @@ set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 
 # Adding code
-pybind11_add_module(_core MODULE src/main.cpp)
+add_subdirectory(src)
 install(TARGETS _core DESTINATION ${SKBUILD_PROJECT_NAME})
