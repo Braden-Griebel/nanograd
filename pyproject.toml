@@ -1,16 +1,11 @@
 [project]
 name = "nanograd"
 version = "0.1.0"
-description = "Add your description here"
+description = "Scalar Automatic Differentiation Engine"
 readme = "README.md"
-authors = [
-    { name = "Braden Griebel", email = "bgriebel@uw.edu" }
-]
+authors = [{ name = "Braden Griebel", email = "bgriebel@uw.edu" }]
 requires-python = ">=3.10"
 dependencies = []
-
-[project.scripts]
-nanograd = "nanograd:main"
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"
