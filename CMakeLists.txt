@@ -7,6 +7,9 @@ project(
   DESCRIPTION "Scalar Automatic Differentiation Engine"
 )
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Setup for Pybind11
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
@@ -14,3 +17,6 @@ find_package(pybind11 CONFIG REQUIRED)
 # Adding code
 add_subdirectory(src)
 install(TARGETS _core DESTINATION ${SKBUILD_PROJECT_NAME})
+
+# For external tools
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")

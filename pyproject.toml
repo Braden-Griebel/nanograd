@@ -1,5 +1,5 @@
 [project]
-name = "nanograd"
+name = "nanograd-bg"
 version = "0.1.0"
 description = "Scalar Automatic Differentiation Engine"
 readme = "README.md"
