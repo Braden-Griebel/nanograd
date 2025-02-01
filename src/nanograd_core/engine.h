@@ -5,8 +5,10 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 // Local Includes
 
@@ -168,7 +170,7 @@ public:
 
   /**
    * @brief Raise a Value to an exponent.
-   * 
+   *
    * @param other Double representing the exponent
    * @return Value representing the previous value raised to the power of other
    */
@@ -190,7 +192,7 @@ public:
 
   /**
    * @brief Calculate a Rectified Linear Unit (ReLU) applied to the Value.
-   * 
+   *
    * @return Value representing Value after passing through the ReLU operation
    */
   Value relu() {
@@ -209,6 +211,59 @@ public:
   }
 
   // endregion Operators
+
+  // region backpropogation
+
+  /**
+   * @brief Topologically sort the expression graph starting from a given root.
+   *
+   * @param root Root Value to start the topological sort from.
+   * @return std::vector<InternalValue> Nodes in topological order
+   */
+  static std::vector<std::shared_ptr<InternalValue>>
+  topoSort(const Value *root) {
+    // The nodes in topological order
+    std::vector<std::shared_ptr<InternalValue>> topo{};
+    // Nodes that have already been visited
+    std::unordered_set<std::shared_ptr<InternalValue>> visited{};
+    // Get the starting InternalValue
+    std::shared_ptr<InternalValue> start = root->val;
+
+    // Define lamba which will build the topological ordering
+    std::function<void(const std::shared_ptr<InternalValue>)> build_topo;
+    build_topo =
+        [&](const std::shared_ptr<InternalValue> currentValue) -> void {
+      if (!visited.count(currentValue)) {
+        visited.insert(currentValue);
+        for (const auto nextVal : currentValue->children) {
+          build_topo(nextVal);
+        }
+        topo.push_back(currentValue);
+      }
+    };
+
+    build_topo(start);
+
+    return topo;
+  }
+
+  void backwards() {
+    // Start by topologically sorting the InternalValues
+    auto nodes = Value::topoSort(this);
+
+    /* Set value of this node to be 1 (since it is what
+      the gradient is being calculated for)*/
+    this->val->grad = 1.0;
+    // Create a reverse view of the nodes vector
+    std::ranges::reverse_view reverseNodes{nodes};
+
+    // Iterate through the nodes in reverse order
+    for(std::shared_ptr<InternalValue> v: reverseNodes){
+      (v->backwardsInternal).value()();
+    }
+  }
+
+  // endregion backpropogation
 };
 
 #endif // ENGINE_H
