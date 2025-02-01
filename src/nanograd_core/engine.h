@@ -1,8 +1,8 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 // Standard Library Includes
-#include <functional>
 #include <cmath>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -104,23 +104,22 @@ public:
    *
    * @param lhs Value on the left hand side of the addition
    * @param rhs Value on the right hand side of the addition
-   * @return New Value representing the two previous values being added
+   * @return Value representing the two previous values being added
    */
   friend Value operator+(const Value &lhs, const Value &rhs) {
     // Create a new internal value for the addition node
-    InternalValue resInternalValue{
-        lhs.val->data + rhs.val->data,                        // data
-        0.,                                                   // grad
-        std::unordered_set<std::shared_ptr<InternalValue>>{
-          lhs.val, rhs.val
-        }, // children
+    auto resInternalValue = std::make_shared<InternalValue>(
+        lhs.val->data + rhs.val->data, // data
+        0.,                            // grad
+        std::unordered_set<std::shared_ptr<InternalValue>>{lhs.val,
+                                                           rhs.val}, // children
         std::nullopt,    // backwards lambda (defined later, since it needs a
                          // reference to out)
         std::string{"+"} // operation
-    };
+    );
 
     // Construct the Value to be returned
-    Value out = Value{std::make_shared<InternalValue>(&resInternalValue)};
+    Value out = Value{resInternalValue};
 
     // Construct the backwards function for the Out Value
     out.val->backwardsInternal = [&]() -> void {
@@ -137,20 +136,23 @@ public:
     return out;
   }
 
-  friend Value operator*(const Value& lhs, const Value& rhs){
-    InternalValue resInternalValue {
-      lhs.val->data * rhs.val->data,
-      0., 
-      std::unordered_set<std::shared_ptr<InternalValue>>{
-        lhs.val, rhs.val
-      }, 
-      std::nullopt, 
-      std::string{"*"}
-    };
+  /**
+   * @brief Multiply two values.
+   *
+   * @param lhs Value on the left hand side of the multiplication
+   * @param rhs Value on the right hand side of the multiplication
+   * @return Value representing the two previous values being multiplied
 
-    Value out = Value{std::make_shared<InternalValue>(&resInternalValue)};
+   */
+  friend Value operator*(const Value &lhs, const Value &rhs) {
+    auto resInternalValue = std::make_shared<InternalValue>(
+        lhs.val->data * rhs.val->data, 0.,
+        std::unordered_set<std::shared_ptr<InternalValue>>{lhs.val, rhs.val},
+        std::nullopt, std::string{"*"});
 
-    out.val->backwardsInternal = [&]()->void {
+    Value out = Value{resInternalValue};
+
+    out.val->backwardsInternal = [&]() -> void {
       // Get references to the internal values
       std::shared_ptr<InternalValue> lhsInt = lhs.val;
       std::shared_ptr<InternalValue> rhsInt = rhs.val;
@@ -164,41 +166,43 @@ public:
     return out;
   }
 
-  Value pow(double other){
-    InternalValue resInternalValue {
-      std::pow(this->val->data, other),
-      0., 
-      std::unordered_set<std::shared_ptr<InternalValue>>{
-        this->val
-      },
-      std::nullopt,
-      std::string{"**"+std::to_string(other)}
-    };
+  /**
+   * @brief Raise a Value to an exponent.
+   * 
+   * @param other Double representing the exponent
+   * @return Value representing the previous value raised to the power of other
+   */
+  Value pow(double other) {
+    auto resInternalValue = std::make_shared<InternalValue>(
+        std::pow(this->val->data, other), 0.,
+        std::unordered_set<std::shared_ptr<InternalValue>>{this->val},
+        std::nullopt, std::string{"**" + std::to_string(other)});
 
-    Value out = Value{std::make_shared<InternalValue>(&resInternalValue)};
+    Value out = Value{resInternalValue};
 
-    out.val->backwardsInternal = [&]()->void{
-      this->val->grad += (other * std::pow(this->val->data, other-1.0))*out.val->grad;
+    out.val->backwardsInternal = [&]() -> void {
+      this->val->grad +=
+          (other * std::pow(this->val->data, other - 1.0)) * out.val->grad;
     };
 
     return out;
   }
 
-  Value relu(){
-    InternalValue resInternalValue {
-      this->val->data < 0. ? 0. : this->val->data,
-       0., 
-       std::unordered_set<std::shared_ptr<InternalValue>>{
-        this->val
-       },
-       std::nullopt, 
-       std::string{"ReLU"}
-    };
+  /**
+   * @brief Calculate a Rectified Linear Unit (ReLU) applied to the Value.
+   * 
+   * @return Value representing Value after passing through the ReLU operation
+   */
+  Value relu() {
+    auto resInternalValue = std::make_shared<InternalValue>(
+        this->val->data < 0. ? 0. : this->val->data, 0.,
+        std::unordered_set<std::shared_ptr<InternalValue>>{this->val},
+        std::nullopt, std::string{"ReLU"});
 
-    Value out {std::make_shared<InternalValue>(&resInternalValue)};
+    Value out{resInternalValue};
 
-    out.val->backwardsInternal = [&]()->void{
-      this->val->grad += (out.val->data > 0. ? out.val->grad : 0. );
+    out.val->backwardsInternal = [&]() -> void {
+      this->val->grad += (out.val->data > 0. ? out.val->grad : 0.);
     };
 
     return out;
