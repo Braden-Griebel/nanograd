@@ -3,6 +3,7 @@
 // Standard Library Includes
 #include <cmath>
 #include <functional>
+#include <ostream>
 #include <memory>
 #include <optional>
 #include <ranges>
@@ -138,6 +139,14 @@ public:
     return out;
   }
 
+  friend Value operator+(const Value& lhs, double rhs){
+      return lhs + Value{rhs};
+  }
+
+  friend Value operator+(double lhs, const Value& rhs){
+    return Value{lhs}+rhs;
+  }
+
   /**
    * @brief Multiply two values.
    *
@@ -168,13 +177,21 @@ public:
     return out;
   }
 
+  friend Value operator*(const Value& lhs, double rhs){
+      return lhs * Value{rhs};
+  }
+
+  friend Value operator*(double lhs, const Value& rhs){
+    return Value{lhs}*rhs;
+  }
+
   /**
    * @brief Raise a Value to an exponent.
    *
    * @param other Double representing the exponent
    * @return Value representing the previous value raised to the power of other
    */
-  Value pow(double other) {
+  Value pow(double other) const {
     auto resInternalValue = std::make_shared<InternalValue>(
         std::pow(this->val->data, other), 0.,
         std::unordered_set<std::shared_ptr<InternalValue>>{this->val},
@@ -195,7 +212,7 @@ public:
    *
    * @return Value representing Value after passing through the ReLU operation
    */
-  Value relu() {
+  Value relu() const {
     auto resInternalValue = std::make_shared<InternalValue>(
         this->val->data < 0. ? 0. : this->val->data, 0.,
         std::unordered_set<std::shared_ptr<InternalValue>>{this->val},
@@ -209,6 +226,46 @@ public:
 
     return out;
   }
+
+  /**
+   * @brief Calculate the negative of a Value.
+   * 
+   * @param val Value being multiplied by -1. 
+   * @return Value 
+   */
+  friend Value operator-(const Value& val){
+    return val*-1.;
+  };
+
+  friend Value operator-(const Value& lhs, const Value& rhs){
+    return lhs + (-rhs);
+  }
+
+  friend Value operator-(const Value& lhs, double rhs){
+    return lhs - Value{rhs};
+  }
+
+  friend Value operator-(double lhs, const Value& rhs){
+    return Value{lhs} - rhs;
+  }
+
+  friend Value operator/(const Value& lhs, const Value& rhs){
+    return lhs * rhs.pow(-1.0);
+  }
+
+  friend Value operator/(const Value& lhs, double rhs){
+    return lhs / Value{rhs};
+  }
+
+  friend Value operator/(double lhs, const Value& rhs){
+    return Value{lhs}/rhs;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Value& val){
+    os << "Value(data=" << val.val->data << ", grad="<<val.val->grad<<")";
+    return os;
+  }
+
 
   // endregion Operators
 
