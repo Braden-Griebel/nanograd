@@ -43,8 +43,8 @@ jobs:
           uv pip install .
       - name: Install Tools
         run: |
-          uv tool install ruff
-          uv tool install pytest
+          uv pip install ruff
+          uv pip install pytest
       - name: Lint with ruff
         run: ruff check --output-format=github ./src
       - name: Test with Pytest
