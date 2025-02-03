@@ -18,14 +18,13 @@ if(DEFINED SKBUILD)
   find_package(pybind11 CONFIG REQUIRED)
   # Define some useful variables
   add_compile_definitions(VERSION_INFO="${SKBUILD_PROJECT_VERSION}")
-  # Adding code
   add_subdirectory(src)
   install(TARGETS _core DESTINATION ${SKBUILD_PROJECT_NAME})
 else()
   project(
     "Nanograd"
-    VERSION 0.1.0 
-    LANGUAGES CXX 
+    VERSION 0.1.0
+    LANGUAGES CXX
     DESCRIPTION "Scalar Automatic Differentiation Engine"
   )
   add_subdirectory(extern/pybind11)

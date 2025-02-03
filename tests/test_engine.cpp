@@ -124,5 +124,3 @@ TEST_CASE("Calculating Gradients", "[engine]") {
 
     }
 }
-
-
