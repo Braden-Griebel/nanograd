@@ -8,7 +8,7 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests test_engine.cpp test_nn.cpp)
 
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain bf)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain nanograd_core)
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}.extras)
 include(CTest)
 include(Catch)

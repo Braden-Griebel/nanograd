@@ -4,7 +4,6 @@
 #include <functional>
 #include <ostream>
 #include <memory>
-#include <optional>
 #include <ranges>
 #include <string>
 #include <unordered_set>
@@ -31,7 +30,7 @@ class InternalValue {
    * @brief Lambda expression used for calculating the
    * gradient during backpropagation.
    */
-  std::optional<std::function<void()> > backwardsInternal;
+  std::function<void()> backwardsInternal;
   /**
    * @brief Children of the current value node.
    *
@@ -56,7 +55,7 @@ public:
    */
   InternalValue(double data, double grad,
                 std::unordered_set<std::shared_ptr<InternalValue> > children,
-                std::optional<std::function<void()> > backwardsInternal,
+                std::function<void()> backwardsInternal,
                 std::string operation)
     : data(data), grad(grad), children(children),
       backwardsInternal(backwardsInternal), operation(operation) {
@@ -70,7 +69,9 @@ public:
   static std::shared_ptr<InternalValue> valFromFloat(double data) {
     return std::make_shared<InternalValue>(InternalValue{
       data, 0., std::unordered_set<std::shared_ptr<InternalValue> >{},
-      std::nullopt, std::string{}
+      []() {
+      },
+      std::string{}
     });
   };
 
@@ -148,7 +149,7 @@ class Value {
             }
             topo.push_back(currentValue);
           }
-    };
+        };
 
     build_topo(start);
 
@@ -198,6 +199,7 @@ public:
   double get_data() const {
     return this->val->get_data();
   }
+
   /**
    * @brief Set the value of data.
    * @param data New value for underlying data value.
@@ -232,7 +234,8 @@ public:
         lhs.val,
         rhs.val
       }, // children
-      std::nullopt, // backwards lambda (defined later, since it needs a
+      []() {
+      }, // backwards lambda (defined later, since it needs a
       // reference to out)
       std::string{"+"} // operation
     );
@@ -275,7 +278,8 @@ public:
     auto resInternalValue = std::make_shared<InternalValue>(
       lhs.val->data * rhs.val->data, 0.,
       std::unordered_set<std::shared_ptr<InternalValue> >{lhs.val, rhs.val},
-      std::nullopt, std::string{"*"});
+      []() {
+      }, std::string{"*"});
 
     Value out = Value{resInternalValue};
 
@@ -311,13 +315,19 @@ public:
     auto resInternalValue = std::make_shared<InternalValue>(
       std::pow(this->val->data, other), 0.,
       std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
-      std::nullopt, std::string{"**" + std::to_string(other)});
+      []() {
+      }, std::string{"**" + std::to_string(other)});
 
-    Value out = Value{resInternalValue};
+    Value out{resInternalValue};
 
-    out.val->backwardsInternal = [&]() -> void {
-      this->val->grad +=
-          (other * std::pow(this->val->data, other - 1.0)) * out.val->grad;
+    out.val->backwardsInternal = [&, other, this]() -> void {
+      // Get references to the internal values
+      const std::shared_ptr<InternalValue> baseInt = this->val;
+      const std::shared_ptr<InternalValue> outInt = out.val;
+      const double exponent = other;
+
+      baseInt->grad +=
+          (exponent * std::pow(baseInt->data, exponent - 1.0)) * outInt->grad;
     };
 
     return out;
@@ -332,12 +342,17 @@ public:
     auto resInternalValue = std::make_shared<InternalValue>(
       this->val->data < 0. ? 0. : this->val->data, 0.,
       std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
-      std::nullopt, std::string{"ReLU"});
+      []() {
+      }, std::string{"ReLU"});
 
     Value out{resInternalValue};
 
     out.val->backwardsInternal = [&]() -> void {
-      this->val->grad += (out.val->data > 0. ? out.val->grad : 0.);
+      // Get references to internal values
+      std::shared_ptr<InternalValue> selfInt = this->val;
+      std::shared_ptr<InternalValue> outInt = out.val;
+
+      selfInt->grad += (outInt->data > 0. ? outInt->grad : 0.);
     };
 
     return out;
@@ -387,8 +402,8 @@ public:
    * @return String representing the Value
    */
   std::string as_string() const {
-    return ("Value(data="+std::to_string(this->val->data)+
-      ", grad="+std::to_string(this->val->grad)+")");
+    return ("Value(data=" + std::to_string(this->val->data) +
+            ", grad=" + std::to_string(this->val->grad) + ")");
   }
 
 
@@ -410,8 +425,9 @@ public:
 
     // Iterate through the nodes in reverse order
     for (const std::ranges::reverse_view reverseNodes{nodes}; const std::shared_ptr<InternalValue> v: reverseNodes) {
-      (v->backwardsInternal).value()();
+      (v->backwardsInternal)();
     }
   }
+
   // endregion backpropogation
 };
