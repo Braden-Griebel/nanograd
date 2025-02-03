@@ -40,7 +40,6 @@ jobs:
       - name: Install Nanograd
         run: |
           uv build
-          uv pip install .
       - name: Install Tools
         run: |
           uv tool install ruff
@@ -49,4 +48,4 @@ jobs:
         run: ruff check --output-format=github ./src
       - name: Test with Pytest
         run: |
-          run pytest ./tests/test_nanograd
+          pytest ./tests/test_nanograd
