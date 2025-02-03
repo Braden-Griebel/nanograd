@@ -4,7 +4,7 @@
 import pytest
 
 # Local imports
-import nanograd_bg as ng
+import nanograd_bgriebel as ng
 
 
 class TestEngine:
