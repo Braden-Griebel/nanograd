@@ -1,5 +1,10 @@
-from nanograd._core import hello_from_bin
+# Standard Library Imports
+from importlib.metadata import version
+# Local Imports
+from nanograd_bg._core import engine
+
+__author__ = "Braden Griebel"
+__version__ = version("metworkpy")
+__all__ = ["engine"]
 
 
-def main() -> None:
-    print(hello_from_bin())

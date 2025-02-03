@@ -16,6 +16,8 @@ if(DEFINED SKBUILD)
   # Setup for Pybind11
   set(PYBIND11_FINDPYTHON ON)
   find_package(pybind11 CONFIG REQUIRED)
+  # Define some useful variables
+  add_compile_definitions(VERSION_INFO="${SKBUILD_PROJECT_VERSION}")
   # Adding code
   add_subdirectory(src)
   install(TARGETS _core DESTINATION ${SKBUILD_PROJECT_NAME})
@@ -26,6 +28,7 @@ else()
     LANGUAGES CXX 
     DESCRIPTION "Scalar Automatic Differentiation Engine"
   )
+  add_subdirectory(extern/pybind11)
   add_subdirectory(src)
   if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     add_subdirectory(tests)

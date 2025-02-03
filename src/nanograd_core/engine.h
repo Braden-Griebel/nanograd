@@ -1,5 +1,4 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#pragma once
 // Standard Library Includes
 #include <cmath>
 #include <functional>
@@ -32,12 +31,12 @@ class InternalValue {
    * @brief Lambda expression used for calculating the
    * gradient during backpropagation.
    */
-  std::optional<std::function<void()>> backwardsInternal;
+  std::optional<std::function<void()> > backwardsInternal;
   /**
    * @brief Children of the current value node.
    *
    */
-  std::unordered_set<std::shared_ptr<InternalValue>> children;
+  std::unordered_set<std::shared_ptr<InternalValue> > children;
   /**
    * @brief Operation that produced this node.
    *
@@ -56,13 +55,12 @@ public:
    * @param operation Operation which produced this node.
    */
   InternalValue(double data, double grad,
-                std::unordered_set<std::shared_ptr<InternalValue>> children,
-                std::optional<std::function<void()>> backwardsInternal,
+                std::unordered_set<std::shared_ptr<InternalValue> > children,
+                std::optional<std::function<void()> > backwardsInternal,
                 std::string operation)
-      : data(data), grad(grad), children(children),
-        backwardsInternal(backwardsInternal), operation(operation) {
-
-        };
+    : data(data), grad(grad), children(children),
+      backwardsInternal(backwardsInternal), operation(operation) {
+  };
   /**
    * @brief Create a new InternalObject from a literal float value.
    *
@@ -71,18 +69,91 @@ public:
    */
   static std::shared_ptr<InternalValue> valFromFloat(double data) {
     return std::make_shared<InternalValue>(InternalValue{
-        data, 0., std::unordered_set<std::shared_ptr<InternalValue>>{},
-        std::nullopt, std::string{}});
+      data, 0., std::unordered_set<std::shared_ptr<InternalValue> >{},
+      std::nullopt, std::string{}
+    });
   };
+
+  /**
+   * @brief Get the current value of the gradient.
+   * @return grad, the current value of the gradient.
+   */
+  double get_grad() const {
+    return this->grad;
+  }
+
+  /**
+   * @brief Set the value of grad for the InternalValue.
+   * @param grad New value for grad
+   */
+  void set_grad(const double grad) {
+    this->grad = grad;
+  }
+
+  /**
+   * @brief Get the current value of data
+   * @return Current value of data
+   */
+  double get_data() const {
+    return this->data;
+  }
+
+  /**
+   * @brief Set the internal data value.
+   * @param data New value for data
+   */
+  void set_data(double data) {
+    this->data = data;
+  }
+
+  /**
+   * @brief Set the value of grad to 0.0.
+   */
+  void zero_grad() {
+    this->data = 0.0;
+  }
+
   friend class Value;
 };
 
 class Value {
   /**
    * @brief Reference to the internal value.
-   *
    */
   std::shared_ptr<InternalValue> val;
+
+  /**
+   * @brief Topologically sort the expression graph starting from a given root.
+   *
+   * @param root Root Value to start the topological sort from.
+   * @return std::vector<InternalValue> Nodes in topological order
+   */
+  static std::vector<std::shared_ptr<InternalValue> >
+  topoSort(const Value *root) {
+    // The nodes in topological order
+    std::vector<std::shared_ptr<InternalValue> > topo{};
+    // Nodes that have already been visited
+    std::unordered_set<std::shared_ptr<InternalValue> > visited{};
+    // Get the starting InternalValue
+    std::shared_ptr<InternalValue> start = root->val;
+
+    // Define lamba which will build the topological ordering
+    std::function<void(const std::shared_ptr<InternalValue>)> build_topo;
+    build_topo =
+        [&](const std::shared_ptr<InternalValue> currentValue) -> void {
+          if (!visited.count(currentValue)) {
+            visited.insert(currentValue);
+            for (const auto nextVal: currentValue->children) {
+              build_topo(nextVal);
+            }
+            topo.push_back(currentValue);
+          }
+    };
+
+    build_topo(start);
+
+    return topo;
+  }
 
 public:
   /**
@@ -90,16 +161,59 @@ public:
    *
    * @param val Internal value held by the Value object.
    */
-  Value(std::shared_ptr<InternalValue> val) : val(val) {};
+  Value(std::shared_ptr<InternalValue> val) : val(val) {
+  };
   /**
    * @brief Construct a new Value object from a float literal.
    *
    * @param literalValue Literal float value from which to construct the new
    * Value.
    */
-  Value(double literalValue)
-      : val(std::shared_ptr<InternalValue>{
-            InternalValue::valFromFloat(literalValue)}) {};
+  Value(const double literalValue)
+    : val(std::shared_ptr<InternalValue>{
+      InternalValue::valFromFloat(literalValue)
+    }) {
+  };
+  // region Access
+  /**
+   * @brief Get the current value of the gradient
+   * @return Current value of the gradient
+   */
+  double get_grad() const {
+    return this->val->get_grad();
+  }
+
+  /**
+   * @brief Set the value of the gradient
+   * @param grad New value of the gradient
+   */
+  void set_grad(const double grad) const {
+    this->val->set_grad(grad);
+  }
+
+  /**
+   * @brief Get the current value of data
+   * @return data Current value of data
+   */
+  double get_data() const {
+    return this->val->get_data();
+  }
+  /**
+   * @brief Set the value of data.
+   * @param data New value for underlying data value.
+   */
+  void set_data(const double data) const {
+    this->val->set_data(data);
+  }
+
+  /**
+   * @brief Set the value of grad to 0.
+   */
+  void zero_grad() const {
+    this->val->zero_grad();
+  }
+
+  // endregion Access
   // region Operators
 
   /**
@@ -112,13 +226,15 @@ public:
   friend Value operator+(const Value &lhs, const Value &rhs) {
     // Create a new internal value for the addition node
     auto resInternalValue = std::make_shared<InternalValue>(
-        lhs.val->data + rhs.val->data, // data
-        0.,                            // grad
-        std::unordered_set<std::shared_ptr<InternalValue>>{lhs.val,
-                                                           rhs.val}, // children
-        std::nullopt,    // backwards lambda (defined later, since it needs a
-                         // reference to out)
-        std::string{"+"} // operation
+      lhs.val->data + rhs.val->data, // data
+      0., // grad
+      std::unordered_set<std::shared_ptr<InternalValue> >{
+        lhs.val,
+        rhs.val
+      }, // children
+      std::nullopt, // backwards lambda (defined later, since it needs a
+      // reference to out)
+      std::string{"+"} // operation
     );
 
     // Construct the Value to be returned
@@ -139,12 +255,12 @@ public:
     return out;
   }
 
-  friend Value operator+(const Value& lhs, double rhs){
-      return lhs + Value{rhs};
+  friend Value operator+(const Value &lhs, double rhs) {
+    return lhs + Value{rhs};
   }
 
-  friend Value operator+(double lhs, const Value& rhs){
-    return Value{lhs}+rhs;
+  friend Value operator+(double lhs, const Value &rhs) {
+    return Value{lhs} + rhs;
   }
 
   /**
@@ -157,9 +273,9 @@ public:
    */
   friend Value operator*(const Value &lhs, const Value &rhs) {
     auto resInternalValue = std::make_shared<InternalValue>(
-        lhs.val->data * rhs.val->data, 0.,
-        std::unordered_set<std::shared_ptr<InternalValue>>{lhs.val, rhs.val},
-        std::nullopt, std::string{"*"});
+      lhs.val->data * rhs.val->data, 0.,
+      std::unordered_set<std::shared_ptr<InternalValue> >{lhs.val, rhs.val},
+      std::nullopt, std::string{"*"});
 
     Value out = Value{resInternalValue};
 
@@ -177,12 +293,12 @@ public:
     return out;
   }
 
-  friend Value operator*(const Value& lhs, double rhs){
-      return lhs * Value{rhs};
+  friend Value operator*(const Value &lhs, double rhs) {
+    return lhs * Value{rhs};
   }
 
-  friend Value operator*(double lhs, const Value& rhs){
-    return Value{lhs}*rhs;
+  friend Value operator*(double lhs, const Value &rhs) {
+    return Value{lhs} * rhs;
   }
 
   /**
@@ -193,9 +309,9 @@ public:
    */
   Value pow(double other) const {
     auto resInternalValue = std::make_shared<InternalValue>(
-        std::pow(this->val->data, other), 0.,
-        std::unordered_set<std::shared_ptr<InternalValue>>{this->val},
-        std::nullopt, std::string{"**" + std::to_string(other)});
+      std::pow(this->val->data, other), 0.,
+      std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
+      std::nullopt, std::string{"**" + std::to_string(other)});
 
     Value out = Value{resInternalValue};
 
@@ -214,9 +330,9 @@ public:
    */
   Value relu() const {
     auto resInternalValue = std::make_shared<InternalValue>(
-        this->val->data < 0. ? 0. : this->val->data, 0.,
-        std::unordered_set<std::shared_ptr<InternalValue>>{this->val},
-        std::nullopt, std::string{"ReLU"});
+      this->val->data < 0. ? 0. : this->val->data, 0.,
+      std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
+      std::nullopt, std::string{"ReLU"});
 
     Value out{resInternalValue};
 
@@ -229,41 +345,50 @@ public:
 
   /**
    * @brief Calculate the negative of a Value.
-   * 
-   * @param val Value being multiplied by -1. 
-   * @return Value 
+   *
+   * @param val Value being multiplied by -1.
+   * @return Value
    */
-  friend Value operator-(const Value& val){
-    return val*-1.;
+  friend Value operator-(const Value &val) {
+    return val * -1.;
   };
 
-  friend Value operator-(const Value& lhs, const Value& rhs){
+  friend Value operator-(const Value &lhs, const Value &rhs) {
     return lhs + (-rhs);
   }
 
-  friend Value operator-(const Value& lhs, double rhs){
+  friend Value operator-(const Value &lhs, double rhs) {
     return lhs - Value{rhs};
   }
 
-  friend Value operator-(double lhs, const Value& rhs){
+  friend Value operator-(double lhs, const Value &rhs) {
     return Value{lhs} - rhs;
   }
 
-  friend Value operator/(const Value& lhs, const Value& rhs){
+  friend Value operator/(const Value &lhs, const Value &rhs) {
     return lhs * rhs.pow(-1.0);
   }
 
-  friend Value operator/(const Value& lhs, double rhs){
+  friend Value operator/(const Value &lhs, double rhs) {
     return lhs / Value{rhs};
   }
 
-  friend Value operator/(double lhs, const Value& rhs){
-    return Value{lhs}/rhs;
+  friend Value operator/(double lhs, const Value &rhs) {
+    return Value{lhs} / rhs;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Value& val){
-    os << "Value(data=" << val.val->data << ", grad="<<val.val->grad<<")";
+  friend std::ostream &operator<<(std::ostream &os, const Value &val) {
+    os << "Value(data=" << val.val->data << ", grad=" << val.val->grad << ")";
     return os;
+  }
+
+  /**
+   * @brief Get a string representation of the Value.
+   * @return String representing the Value
+   */
+  std::string as_string() const {
+    return ("Value(data="+std::to_string(this->val->data)+
+      ", grad="+std::to_string(this->val->grad)+")");
   }
 
 
@@ -272,39 +397,9 @@ public:
   // region backpropogation
 
   /**
-   * @brief Topologically sort the expression graph starting from a given root.
-   *
-   * @param root Root Value to start the topological sort from.
-   * @return std::vector<InternalValue> Nodes in topological order
+   * @brief Compute the Value of the gradients for the current Value
    */
-  static std::vector<std::shared_ptr<InternalValue>>
-  topoSort(const Value *root) {
-    // The nodes in topological order
-    std::vector<std::shared_ptr<InternalValue>> topo{};
-    // Nodes that have already been visited
-    std::unordered_set<std::shared_ptr<InternalValue>> visited{};
-    // Get the starting InternalValue
-    std::shared_ptr<InternalValue> start = root->val;
-
-    // Define lamba which will build the topological ordering
-    std::function<void(const std::shared_ptr<InternalValue>)> build_topo;
-    build_topo =
-        [&](const std::shared_ptr<InternalValue> currentValue) -> void {
-      if (!visited.count(currentValue)) {
-        visited.insert(currentValue);
-        for (const auto nextVal : currentValue->children) {
-          build_topo(nextVal);
-        }
-        topo.push_back(currentValue);
-      }
-    };
-
-    build_topo(start);
-
-    return topo;
-  }
-
-  void backwards() {
+  void backwards() const {
     // Start by topologically sorting the InternalValues
     auto nodes = Value::topoSort(this);
 
@@ -312,15 +407,11 @@ public:
       the gradient is being calculated for)*/
     this->val->grad = 1.0;
     // Create a reverse view of the nodes vector
-    std::ranges::reverse_view reverseNodes{nodes};
 
     // Iterate through the nodes in reverse order
-    for(std::shared_ptr<InternalValue> v: reverseNodes){
+    for (const std::ranges::reverse_view reverseNodes{nodes}; const std::shared_ptr<InternalValue> v: reverseNodes) {
       (v->backwardsInternal).value()();
     }
   }
-
   // endregion backpropogation
 };
-
-#endif // ENGINE_H

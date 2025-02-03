@@ -6,15 +6,40 @@
 
 // External Dependencies
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
-std::string hello_from_bin() { return "Hello from nanograd!"; }
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(_core, m) {
-  m.doc() = "pybind11 hello module";
+    m.doc() = "Small scalar valued automatic differentiation library";
 
-  m.def("hello_from_bin", &hello_from_bin, R"pbdoc(
-      A function that returns a Hello string.
-  )pbdoc");
+    // Add the engine submodule
+    auto engine = m.def_submodule("engine");
+    engine.doc() = "Automatic differentiation engine for nanograd";
+    py::class_<Value>(m, "Value")
+        .def(py::init<const double>())
+        .def("__repr__", &Value::as_string)
+    .def_property("grad", &Value::get_grad, &Value::set_grad)
+    .def_property("data", &Value::get_data, &Value::set_data)
+    .def("zero_grad", &Value::zero_grad, R"pbdoc(
+        Set the value of grad to 0.0
+        )pbdoc")
+    .def("backward", &Value::backwards)
+    .def(py::self + py::self)
+    .def(double() + py::self)
+    .def(py::self + double())
+    .def(py::self - py::self)
+    .def(double() - py::self)
+    .def(py::self - double())
+    .def(py::self * py::self)
+    .def(double() * py::self)
+    .def(py::self * double())
+    .def(py::self / py::self)
+    .def(double() / py::self)
+    .def(py::self / double())
+    .def("__pow__", [](const Value &a, double b) {
+        return a.pow(b);
+    })
+    .def("relu", &Value::relu);
 }
