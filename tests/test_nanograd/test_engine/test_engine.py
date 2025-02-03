@@ -48,7 +48,7 @@ class TestEngine:
 
     def test_exponentiation(self, values):
         x, _ = values
-        z = x.pow(3)
+        z = x**3
         # Calculate the gradient of x
         z.backwards()
         assert z.grad == pytest.approx(1.0), "Gradient wrt to self wasn't 1."
