@@ -40,9 +40,9 @@ jobs:
       - name: Install Nanograd
         run: |
           uv build
-          uv pip install .
+          uv sync
       - name: Lint with ruff
-        run: uvx ruff check --output-format=github ./src
+        run: ruff check --output-format=github ./src
       - name: Test with Pytest
         run: |
-          uvx run pytest ./tests/test_nanograd
+          run pytest ./tests/test_nanograd
