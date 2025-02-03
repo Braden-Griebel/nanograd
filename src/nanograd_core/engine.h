@@ -18,6 +18,7 @@
  * @brief Represents a single scalar value and its gradient
  */
 class InternalValue {
+public:
   /**
    * @brief The internal data associated with the Value.
    */
@@ -42,8 +43,6 @@ class InternalValue {
    *
    */
   std::string operation;
-
-public:
   /**
    * @brief Construct a new Internal Value object
    *
@@ -114,8 +113,6 @@ public:
   void zero_grad() {
     this->grad = 0.0;
   }
-
-  friend class Value;
 };
 
 class Value {
@@ -313,12 +310,12 @@ public:
    * @param other Double representing the exponent
    * @return Value representing the previous value raised to the power of other
    */
-  [[nodiscard]] Value pow(double other) const{
+  [[nodiscard]] Value pow(double other) const {
     const auto resInternalValue = std::make_shared<InternalValue>(
-        std::pow(this->val->data, other), 0.,
-        std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
-        []() {
-        }, std::string{"**" + std::to_string(other)});
+      std::pow(this->val->data, other), 0.,
+      std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
+      []() {
+      }, std::string{"**" + std::to_string(other)});
 
     Value out{resInternalValue};
 
@@ -331,7 +328,7 @@ public:
     // to access the wrapping Value (which can then be managed more easily in python)
     out.val->backwardsInternal = [=]() -> void {
       baseInt->grad +=
-              (exponent * std::pow(baseInt->data, exponent - 1.0)) * outInt->grad;
+          (exponent * std::pow(baseInt->data, exponent - 1.0)) * outInt->grad;
     };
 
     return out;
@@ -344,10 +341,10 @@ public:
    */
   [[nodiscard]] Value relu() const {
     const auto resInternalValue = std::make_shared<InternalValue>(
-        this->val->data < 0. ? 0. : this->val->data, 0.,
-        std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
-        []() {
-        }, std::string{"ReLU"});
+      this->val->data < 0. ? 0. : this->val->data, 0.,
+      std::unordered_set<std::shared_ptr<InternalValue> >{this->val},
+      []() {
+      }, std::string{"ReLU"});
 
     Value out{resInternalValue};
 
