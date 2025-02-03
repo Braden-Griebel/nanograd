@@ -39,7 +39,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Nanograd
         run: |
-          uv build --system
+          uv build
+          uv pip install .
+      - name: Install Tools
+        run: |
+          uv tool install ruff
+          uv tool install pytest
       - name: Lint with ruff
         run: ruff check --output-format=github ./src
       - name: Test with Pytest
