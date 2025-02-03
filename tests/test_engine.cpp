@@ -121,6 +121,31 @@ TEST_CASE("Calculating Gradients", "[engine]") {
         // Check that the grad values for a and b are correct
         CHECK_THAT(a.get_grad(), Catch::Matchers::WithinAbs(0.0, margin)); // x^3->2*x^2->50
         CHECK_THAT(b.get_grad(), Catch::Matchers::WithinAbs(1.0, margin));
+    }
 
+    SECTION("Test Zeroing"){
+        Value x{5.};
+        Value y{3.};
+        Value z = x+y;
+        // Define the floating point margin
+        double margin = 0.0000001;
+
+        // Gradients should start at 0.
+        CHECK_THAT(x.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+        CHECK_THAT(y.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+        CHECK_THAT(z.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+        // Check the gradient for dz/dx and dz/dy
+        z.backwards(); // caclulate the gradients
+        // Check that the grad values for x and y are correct
+        CHECK_THAT(x.get_grad(), Catch::Matchers::WithinAbs(1.0, margin));
+        CHECK_THAT(y.get_grad(), Catch::Matchers::WithinAbs(1.0, margin));
+        // Zero the gradients
+        x.zero_grad();
+        y.zero_grad();
+        z.zero_grad();
+        // Gradients should now be 0
+        CHECK_THAT(x.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+        CHECK_THAT(y.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+        CHECK_THAT(z.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
     }
 }

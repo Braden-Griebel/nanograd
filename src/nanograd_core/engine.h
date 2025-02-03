@@ -111,7 +111,7 @@ public:
    * @brief Set the value of grad to 0.0.
    */
   void zero_grad() {
-    this->data = 0.0;
+    this->grad = 0.0;
   }
 
   friend class Value;

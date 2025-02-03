@@ -31,6 +31,7 @@ class TestEngine:
         x, y = values
         z = x + y
         # Calculate the gradients of x and y
+        print("not error yet")
         z.backwards()
         assert z.grad == pytest.approx(1.0), "Gradient of z wasn't 1."
         assert x.grad == pytest.approx(1.0), "Gradient of x+y wrt x wasn't 1."
