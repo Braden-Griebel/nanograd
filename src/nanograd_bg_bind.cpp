@@ -23,38 +23,76 @@ public:
 };
 
 void add_engine(py::module_ &m) {
-  const py::module_ engine =
-      m.def_submodule("engine", "Automatic differentiation engine");
+    const py::module_ engine =
+            m.def_submodule("engine", "Automatic differentiation engine");
 
-  // Add Value class to submodule
-  py::class_<Value>(engine, "Value")
-      .def(py::init<const double>())
-      .def("__repr__", &Value::as_string)
-      .def_property("grad", &Value::get_grad, &Value::set_grad)
-      .def_property("data", &Value::get_data, &Value::set_data)
-      .def("zero_grad", &Value::zero_grad, R"pbdoc(
+    // Add Value class to submodule
+    py::class_<Value>(engine, "Value")
+            .def(py::init<const double>())
+            .def("__repr__", &Value::as_string)
+            .def_property("grad", &Value::get_grad, &Value::set_grad)
+            .def_property("data", &Value::get_data, &Value::set_data)
+            .def("zero_grad", &Value::zero_grad, R"pbdoc(
         Set the value of grad to 0.0
         )pbdoc")
-      .def("backwards", &Value::backwards)
-      .def(py::self + py::self)
-      .def(double() + py::self)
-      .def(py::self + double())
-      .def(py::self - py::self)
-      .def(double() - py::self)
-      .def(py::self - double())
-      .def(py::self * py::self)
-      .def(double() * py::self)
-      .def(py::self * double())
-      .def(py::self / py::self)
-      .def(double() / py::self)
-      .def(py::self / double())
-      .def("__pow__", [](const Value &a, const double b) { return a.pow(b); })
-      .def("relu", &Value::relu);
+            .def("backwards", &Value::backwards)
+            .def(py::self + py::self)
+            .def(double() + py::self)
+            .def(py::self + double())
+            .def(py::self - py::self)
+            .def(double() - py::self)
+            .def(py::self - double())
+            .def(py::self * py::self)
+            .def(double() * py::self)
+            .def(py::self * double())
+            .def(py::self / py::self)
+            .def(double() / py::self)
+            .def(py::self / double())
+            .def("__pow__", [](const Value &a, const double b) { return a.pow(b); })
+            .def("relu", &Value::relu);
+}
+
+void add_nn(py::module_ &m) {
+    auto nn = m.def_submodule("nn", "Neural Network Classes");
+    // Add Module class to the submodule
+    py::class_<Module, PyModule>(nn, "Module")
+            .def(py::init<>())
+            .def("zero_grad", &Module::zero_grad)
+            .def("get_parameters", &Module::get_parameters);
+
+    // Add the Neuron class to the submodule
+    py::class_<Neuron>(nn, "Neuron")
+            .def(py::init<int, bool>())
+            .def("get_parameters", &Neuron::get_parameters)
+            .def("zero_grad", &Neuron::zero_grad)
+            .def("__call__", [](const Neuron &neuron, const std::vector<Value> &x)-> Value { return neuron(x); },
+                 py::is_operator());
+
+    // Add the Layer class to the submodule
+    py::class_<Layer>(nn, "Layer")
+            .def(py::init<int, int, bool>())
+            .def("get_parameters", &Layer::get_parameters)
+            .def("zero_grad", &Layer::zero_grad)
+            .def("__call__", [](const Layer &layer, const std::vector<Value> &x)-> std::vector<Value> {
+                return layer(x);
+            }, py::is_operator());
+
+    // Add the multilayer perceptron class to the submodule
+    py::class_<MultiLayerPerceptron>(nn, "MultiLayerPerceptron")
+            .def(py::init<int, std::vector<int> >())
+            .def("get_parameters", &MultiLayerPerceptron::get_parameters)
+            .def("zero_grad", &MultiLayerPerceptron::zero_grad)
+            .def("__call__", [](const MultiLayerPerceptron &mlp, const std::vector<Value> &x)-> std::vector<Value> {
+                return mlp(x);
+            }, py::is_operator());
 }
 
 PYBIND11_MODULE(_core, m) {
-  m.doc() = "Small scalar valued automatic differentiation library";
+    m.doc() = "Small scalar valued automatic differentiation library";
 
-  // Add the engine submodule
-  add_engine(m);
+    // Add the engine submodule
+    add_engine(m);
+
+    // Add the nn submodule
+    add_nn(m);
 }

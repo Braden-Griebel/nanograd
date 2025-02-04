@@ -121,7 +121,7 @@ public:
      * @param x Input vector to this layer
      * @return Vector of neuron activations/outputs from this Layer
      */
-    std::vector<Value> operator()(const std::vector<Value> &x);
+    std::vector<Value> operator()(const std::vector<Value> &x) const;
 
     /**
      * @brief Zero the gradients of all the neurons in the Layers.
@@ -155,7 +155,7 @@ public:
      * @param x Input of vector of Values to the MultiLayerPerceptron
      * @return Activation values of the last layer of the MultiLayerPerceptron
      */
-    std::vector<Value> operator()(std::vector<Value> x);
+    std::vector<Value> operator()(std::vector<Value> x) const;
 
     /**
      * @brief Get all the parameters associated with the MultiLayerPerceptron

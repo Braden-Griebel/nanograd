@@ -32,7 +32,7 @@ Value Neuron::operator()(const std::vector<Value> &x) const {
     return activation;
 }
 
-std::vector<Value> Layer::operator()(const std::vector<Value> &x) {
+std::vector<Value> Layer::operator()(const std::vector<Value> &x) const {
     if (x.size() != this->neurons.size()) {
         throw std::runtime_error(
             "Layer::operator(): mismatched size, x has a size of " + std::to_string(x.size()) +
@@ -46,7 +46,7 @@ std::vector<Value> Layer::operator()(const std::vector<Value> &x) {
     return out;
 }
 
-std::vector<Value> MultiLayerPerceptron::operator()(std::vector<Value> x) {
+std::vector<Value> MultiLayerPerceptron::operator()(std::vector<Value> x) const {
     std::vector<Value> out = std::move(x);
     for (auto& l : this->layers) {
         out = l(out);
