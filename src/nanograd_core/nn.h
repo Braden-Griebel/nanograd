@@ -4,13 +4,11 @@
 #include <utility>
 #include <vector>
 #include <deque>
+#include <random>
 
 // External Imports
-#include "pybind11/pybind11.h"
 
 // Local Imports
-#include <bits/random.h>
-
 #include "engine.h"
 
 /**
@@ -45,18 +43,6 @@ public:
     }
 };
 
-// Create a python trampoline class for Module
-class PyModule : public Module {
-    using Module::Module;
-
-public:
-    void zero_grad() override { PYBIND11_OVERRIDE(void, Module, zero_grad,); }
-
-    std::vector<Value> get_parameters() override {
-        PYBIND11_OVERRIDE(std::vector<Value>, Module, get_parameters,);
-    }
-};
-
 
 /**
  * @brief Neuron represents a single neuron in a neural network
@@ -81,38 +67,14 @@ public:
      * @param nin Number of inputs to the neuron
      * @param nonlinear Whether the neuron should use a non-linear activation function (ReLU)
      */
-    explicit Neuron(const int nin, const bool nonlinear): b(Value{0.}), nonlinear(nonlinear) {
-        // create a random number generator
-        std::random_device rand_dev;
-        std::mt19937_64 generator{rand_dev()};
-        std::uniform_real_distribution<double> distribution{-1.0, 1.0};
-
-        for (int i = 0; i < nin; i++) {
-            this->w.emplace_back(distribution(generator));
-        }
-    }
+    explicit Neuron(const int nin, const bool nonlinear);
 
     /**
      * @brief Determine the activation of the neuron given an input
      * @param x Vector of values coming in to the neuron (must be the same length as w)
      * @return Neuron activation
      */
-    Value operator()(const std::vector<Value> &x) const {
-        if (x.size() != this->w.size()) {
-            throw std::runtime_error(
-                "Neuron::operator(): mismatched size, w is of size " + std::to_string(this->w.size()) +
-                " and x is of size " + std::to_string(x.size()));
-        }
-        Value activation = this->b;
-        for (int idx = 0; idx < this->w.size(); ++idx) {
-            activation = activation + (x[idx] + this->w[idx]);
-        }
-        if (this->nonlinear) {
-            activation = activation.relu();
-        }
-
-        return activation;
-    }
+    Value operator()(const std::vector<Value> &x) const;
 
     /**
      * @brief Get the parameters of the neurone (weights and bias)
@@ -159,19 +121,7 @@ public:
      * @param x Input vector to this layer
      * @return Vector of neuron activations/outputs from this Layer
      */
-    std::vector<Value> operator()(const std::vector<Value> &x) {
-        if (x.size() != this->neurons.size()) {
-            throw std::runtime_error(
-                "Layer::operator(): mismatched size, x has a size of " + std::to_string(x.size()) +
-                " but this layer only has " + std::to_string(this->neurons.size()) + " neurons.");
-        }
-
-        std::vector<Value> out;
-        for (const auto &neuron: neurons) {
-            out.push_back(neuron(x));
-        }
-        return out;
-    }
+    std::vector<Value> operator()(const std::vector<Value> &x);
 
     /**
      * @brief Zero the gradients of all the neurons in the Layers.
@@ -205,27 +155,13 @@ public:
      * @param x Input of vector of Values to the MultiLayerPerceptron
      * @return Activation values of the last layer of the MultiLayerPerceptron
      */
-    std::vector<Value> operator()(std::vector<Value> x) {
-        std::vector<Value> out = std::move(x);
-        for (auto& l : this->layers) {
-            out = l(out);
-        }
-        return out;
-    }
+    std::vector<Value> operator()(std::vector<Value> x);
 
     /**
      * @brief Get all the parameters associated with the MultiLayerPerceptron
      * @return A vectors of the parameters for all Layers in the perceptron
      */
-    std::vector<Value> get_parameters() override {
-        std::deque<Value> outDeque;
-        for (auto& l: this->layers) {
-            auto layerParams = l.get_parameters();
-            outDeque.insert(outDeque.end(), layerParams.begin(), layerParams.end());
-        }
-        std::vector<Value> out{outDeque.begin(), outDeque.end()};
-        return out;
-    }
+    std::vector<Value> get_parameters() override;
 
     /**
      * @brief Zero the gradients of all the Layers in the MultiLayerPerceptron

@@ -10,8 +10,20 @@
 
 namespace py = pybind11;
 
+// Create a python trampoline class for Module
+class PyModule : public Module {
+    using Module::Module;
+
+public:
+    void zero_grad() override { PYBIND11_OVERRIDE(void, Module, zero_grad,); }
+
+    std::vector<Value> get_parameters() override {
+        PYBIND11_OVERRIDE(std::vector<Value>, Module, get_parameters,);
+    }
+};
+
 void add_engine(py::module_ &m) {
-  py::module_ engine =
+  const py::module_ engine =
       m.def_submodule("engine", "Automatic differentiation engine");
 
   // Add Value class to submodule
