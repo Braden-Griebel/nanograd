@@ -47,23 +47,26 @@ class TestLayer:
     def test_calling(self):
         test_layer = ng.Layer(4,5,True)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
-        output = test_layer(input_)
-        assert isinstance(output, ng.Value)
-        assert output.data > 0
+        outputs = test_layer(input_)
+        for output in outputs:
+            assert isinstance(output, ng.Value)
+            assert output.data > 0
 
     def test_grads(self):
         test_layer = ng.Layer(4,5,True)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
-        output = test_layer(input_)
-        output.backwards()
+        outputs = test_layer(input_)
+        for output in outputs:
+            output.backwards()
         for param in test_layer.get_parameters():
             assert param.grad > 0
 
     def test_zeroing(self):
         test_layer = ng.Layer(4,5,True)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
-        output = test_layer(input_)
-        output.backwards()
+        outputs = test_layer(input_)
+        for output in outputs:
+            output.backwards()
         for param in test_layer.get_parameters():
             assert param.grad > 0
         test_layer.zero_grad()
