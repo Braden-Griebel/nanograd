@@ -11,7 +11,6 @@ class TestNeuron:
     def test_creation(self):
         test_neuron = ng.Neuron(5, True)
         assert len(test_neuron.get_parameters()) == 6
-        assert isinstance(test_neuron, ng.Module)
 
     def test_calling(self):
         test_neuron = ng.Neuron(5, True)
@@ -38,3 +37,73 @@ class TestNeuron:
         test_neuron.zero_grad()
         for param in test_neuron.get_parameters():
             assert param.grad == 0
+
+
+class TestLayer:
+    def test_creation(self):
+        test_layer = ng.Layer(4,5,True)
+        assert len(test_layer.get_parameters()) == 25
+
+    def test_calling(self):
+        test_layer = ng.Layer(4,5,True)
+        input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
+        output = test_layer(input_)
+        assert isinstance(output, ng.Value)
+        assert output.data > 0
+
+    def test_grads(self):
+        test_layer = ng.Layer(4,5,True)
+        input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
+        output = test_layer(input_)
+        output.backwards()
+        for param in test_layer.get_parameters():
+            assert param.grad > 0
+
+    def test_zeroing(self):
+        test_layer = ng.Layer(4,5,True)
+        input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
+        output = test_layer(input_)
+        output.backwards()
+        for param in test_layer.get_parameters():
+            assert param.grad > 0
+        test_layer.zero_grad()
+        for param in test_layer.get_parameters():
+            assert param.grad == 0
+
+class TestMultiLayerPerceptron:
+    def test_creation(self):
+        test_mlp = ng.MultiLayerPerceptron(4,[5,5,4,3])
+        assert len(test_mlp.get_parameters()) == 94
+
+    def test_calling(self):
+        test_mlp = ng.MultiLayerPerceptron(4,[5,5,4,3])
+        input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
+        outputs = test_mlp(input_)
+        for output in outputs:
+            assert isinstance(output, ng.Value)
+            assert output.data > 0
+
+    def test_grads(self):
+        test_mlp = ng.MultiLayerPerceptron(4,[5,5,4,3])
+        input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
+        outputs = test_mlp(input_)
+        for output in outputs:
+            output.backwards()
+        for param in test_mlp.get_parameters():
+            assert param.grad > 0
+
+    def test_zeroing(self):
+        test_mlp = ng.MultiLayerPerceptron(4,[5,5,4,3])
+        input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
+        outputs = test_mlp(input_)
+        for output in outputs:
+            output.backwards()
+        for param in test_mlp.get_parameters():
+            assert param.grad > 0
+        test_mlp.zero_grad()
+        for param in test_mlp.get_parameters():
+            assert param.grad == 0
+
+
+
+

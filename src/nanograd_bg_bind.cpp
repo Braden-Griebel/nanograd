@@ -73,18 +73,14 @@ void add_nn(py::module_ &m) {
             .def(py::init<int, int, bool>())
             .def("get_parameters", &Layer::get_parameters)
             .def("zero_grad", &Layer::zero_grad)
-            .def("__call__", [](const Layer &layer, const std::vector<Value> &x)-> std::vector<Value> {
-                return layer(x);
-            }, py::is_operator());
+            .def("__call__", &Layer::operator());
 
     // Add the multilayer perceptron class to the submodule
     py::class_<MultiLayerPerceptron>(nn, "MultiLayerPerceptron")
             .def(py::init<int, std::vector<int> >())
             .def("get_parameters", &MultiLayerPerceptron::get_parameters)
             .def("zero_grad", &MultiLayerPerceptron::zero_grad)
-            .def("__call__", [](const MultiLayerPerceptron &mlp, const std::vector<Value> &x)-> std::vector<Value> {
-                return mlp(x);
-            }, py::is_operator());
+            .def("__call__", &MultiLayerPerceptron::operator());
 }
 
 PYBIND11_MODULE(_core, m) {
