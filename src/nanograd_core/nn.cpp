@@ -32,13 +32,17 @@ Value Neuron::operator()(const std::vector<Value> &x) const {
     return activation;
 }
 
-std::vector<Value> Layer::operator()(const std::vector<Value> &x) const {
-    if (x.size() != this->neurons.size()) {
-        throw std::runtime_error(
-            "Layer::operator(): mismatched size, x has a size of " + std::to_string(x.size()) +
-            " but this layer only has " + std::to_string(this->neurons.size()) + " neurons.");
+std::vector<Value> Layer::get_parameters() {
+    std::deque<Value> outDeque;
+    for (auto& n: this->neurons) {
+        auto neuronParams = n.get_parameters();
+        outDeque.insert(outDeque.end(), neuronParams.begin(), neuronParams.end());
     }
+    std::vector<Value> out{outDeque.begin(), outDeque.end()};
+    return out;
+}
 
+std::vector<Value> Layer::operator()(const std::vector<Value> &x) const {
     std::vector<Value> out;
     for (const auto &neuron: neurons) {
         out.push_back(neuron(x));

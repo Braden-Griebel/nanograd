@@ -117,6 +117,12 @@ public:
     }
 
     /**
+     * @brief Find all the parameters of the Layer
+     * @return Parameters of the Layer
+     */
+    std::vector<Value> get_parameters() override;;
+
+    /**
      * @brief Calculate the neuron activations given an input x
      * @param x Input vector to this layer
      * @return Vector of neuron activations/outputs from this Layer
