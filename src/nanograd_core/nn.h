@@ -151,7 +151,7 @@ public:
      */
     MultiLayerPerceptron(int nin, std::vector<int> nouts) {
         this->layers.emplace_back(nin, nouts[0], 0 != nouts.size() - 1);
-        for (int idx = 1; idx < nouts.size(); ++idx) {
+        for (int idx = 0; idx < nouts.size()-1; ++idx) {
             this->layers.emplace_back(nouts[idx], nouts[idx + 1], idx != nouts.size() - 1);
         }
     }
