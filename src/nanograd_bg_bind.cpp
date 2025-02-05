@@ -53,7 +53,7 @@ void add_engine(py::module_ &m) {
 }
 
 void add_nn(py::module_ &m) {
-    auto nn = m.def_submodule("nn", "Neural Network Classes");
+    const auto nn = m.def_submodule("nn", "Neural Network Classes");
     // Add Module class to the submodule
     py::class_<Module, PyModule>(nn, "Module")
             .def(py::init<>())
