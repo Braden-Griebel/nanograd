@@ -46,4 +46,33 @@ TEST_CASE("Creating Modules", "[nn]") {
             CHECK_THAT(param.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
         }
     }
+
+    SECTION("Creating Layers") {
+        Layer testLayer{4,5,true};
+        // Margin for floating point
+        const double margin = 0.0000001;
+
+        // Check that there are 25 parameters (4 weights 1 bias per each of 5 neurons)
+        CHECK(testLayer.get_parameters().size() == 25);
+
+        // Check that the layer can be called
+        const std::vector<Value> inputs {Value{1.0}, Value{1.0}, Value{1.0}, Value{1.0}};
+        const std::vector<Value> outputs = testLayer(inputs);
+
+        // Again since the input is all 1.0, all the parameters should have gradients of 1.0
+        for (auto& output: outputs) {
+            // Additionally, all the outputs should be non-negative due to the ReLU activation
+            CHECK(output.get_data() >=0.0);
+            output.backwards();
+        }
+        for (auto& param: testLayer.get_parameters()) {
+            CHECK_THAT(param.get_grad(), Catch::Matchers::WithinAbs(1.0, margin));
+        }
+
+        // Zero the gradients and check that this worked
+        testLayer.zero_grad();
+        for (auto& param: testLayer.get_parameters()) {
+            CHECK_THAT(param.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+        }
+    }
 }
