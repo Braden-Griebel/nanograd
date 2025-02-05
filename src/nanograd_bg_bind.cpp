@@ -7,6 +7,7 @@
 // External Dependencies
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -65,8 +66,7 @@ void add_nn(py::module_ &m) {
             .def(py::init<int, bool>())
             .def("get_parameters", &Neuron::get_parameters)
             .def("zero_grad", &Neuron::zero_grad)
-            .def("__call__", [](const Neuron &neuron, const std::vector<Value> &x)-> Value { return neuron(x); },
-                 py::is_operator());
+            .def("__call__", &Neuron::operator());
 
     // Add the Layer class to the submodule
     py::class_<Layer>(nn, "Layer")
