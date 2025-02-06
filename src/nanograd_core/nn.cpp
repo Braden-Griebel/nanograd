@@ -25,7 +25,7 @@ Value Neuron::operator()(const std::vector<Value> &x) const {
     }
     Value activation = this->b;
     for (int idx = 0; idx < this->w.size(); ++idx) {
-        activation = activation + (x[idx] + this->w[idx]);
+        activation = activation + (x[idx] * this->w[idx]);
     }
     if (this->nonlinear) {
         activation = activation.relu();
@@ -34,7 +34,13 @@ Value Neuron::operator()(const std::vector<Value> &x) const {
     return activation;
 }
 
-std::vector<Value> Layer::get_parameters() {
+std::vector<Value> Neuron::get_parameters() {
+    std::vector<Value> out = this->w;
+    out.push_back(this->b);
+    return out;
+}
+
+auto Layer::get_parameters() -> std::vector<Value> {
     std::deque<Value> outDeque;
     for (auto& n: this->neurons) {
         auto neuronParams = n.get_parameters();

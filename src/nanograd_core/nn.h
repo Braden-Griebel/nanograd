@@ -67,24 +67,20 @@ public:
      * @param nin Number of inputs to the neuron
      * @param nonlinear Whether the neuron should use a non-linear activation function (ReLU)
      */
-    explicit Neuron(int nin, bool nonlinear);
+    explicit Neuron(const int nin, const bool nonlinear);;
 
     /**
      * @brief Determine the activation of the neuron given an input
      * @param x Vector of values coming in to the neuron (must be the same length as w)
      * @return Neuron activation
      */
-    Value operator()(const std::vector<Value> &x) const;
+    Value operator()(const std::vector<Value> &x) const;;
 
     /**
      * @brief Get the parameters of the neurone (weights and bias)
      * @return Vector of parameters of the neuron
      */
-    std::vector<Value> get_parameters() override {
-        std::vector<Value> out = this->w;
-        out.push_back(this->b);
-        return out;
-    }
+    std::vector<Value> get_parameters() override;
 
     /**
      * @brief Zero the gradients of the parameters of the neuron
