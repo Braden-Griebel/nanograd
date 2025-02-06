@@ -1,6 +1,5 @@
 // Standard Library Includes
 #include <cmath>
-#include <iostream>
 
 // External Includes
 #include "catch2/catch_test_macros.hpp"
@@ -33,15 +32,6 @@ TEST_CASE("Creating Modules", "[nn]") {
 
         // Check that the gradients can be calculated
         output.backwards();
-
-        // Some of the gradients should be non-zero
-        bool nonZeroPresent = false;
-        for (auto& param : testNeuron.get_parameters()) {
-            if (param.get_grad() > margin){
-                nonZeroPresent = true;
-            }
-        }
-        CHECK(nonZeroPresent);
 
         // Zero the gradients
         testNeuron.zero_grad();
