@@ -1,4 +1,5 @@
 // Standard Library Includes
+#include <iostream>
 
 // External Includes
 #include "catch2/catch_test_macros.hpp"
@@ -81,7 +82,7 @@ TEST_CASE("Calculating Gradients", "[engine]") {
         // Check the gradient for dz/dx and dz/dy
         y.backwards(); // calculate the gradients
         // Check that the grad values for x and y are correct
-        CHECK_THAT(x.get_grad(), Catch::Matchers::WithinAbs(75.0, margin)); // x^3->2*x^2->50
+        CHECK_THAT(x.get_grad(), Catch::Matchers::WithinAbs(75.0, margin)); // x^3->3*x^2->50
         CHECK_THAT(y.get_grad(), Catch::Matchers::WithinAbs(1.0, margin));
     }
 
@@ -147,5 +148,26 @@ TEST_CASE("Calculating Gradients", "[engine]") {
         CHECK_THAT(x.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
         CHECK_THAT(y.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
         CHECK_THAT(z.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
+    }
+
+    SECTION("More Complex Calculation") {
+        Value a {-4.0};
+        Value b {2.0};
+        Value c = a+b;
+        // Next calculation
+        Value d = a*b + b.pow(3.0);
+        c = c + c + 1.0;
+        c = c + 1.0 + c + (-a);
+        d = d+d*2.0 + (b+a).relu();
+        d = d+3.0*d+(b-a).relu();
+        Value e=c-d;
+        Value f=e.pow(2.0);
+        Value g = f / 2.0;
+        g = g + 10.0 / f;
+        // Below tests based on micrograd
+        CHECK_THAT(g.get_data(), Catch::Matchers::WithinAbs(24.7041, 0.0001));
+        g.backwards();
+        CHECK_THAT(a.get_grad(), Catch::Matchers::WithinAbs(138.8338, 0.0001));
+        CHECK_THAT(b.get_grad(), Catch::Matchers::WithinAbs(645.5773, 0.0001));
     }
 }

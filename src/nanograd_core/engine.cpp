@@ -1,6 +1,3 @@
-//
-// Created by bgriebel on 2/3/25.
-//
 #include "engine.h"
 
 InternalValue::InternalValue(const double data, const double grad,

@@ -255,8 +255,8 @@ public:
     // copy by value so it holds a counted reference to the
     out.val->backwardsInternal = [=]() -> void {
       // Compute the gradients
-      lhsInt->grad = rhsInt->data * outInt->grad;
-      rhsInt->grad = lhsInt->data * outInt->grad;
+      lhsInt->grad += rhsInt->data * outInt->grad;
+      rhsInt->grad += lhsInt->data * outInt->grad;
     };
 
     return out;

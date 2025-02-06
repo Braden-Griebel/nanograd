@@ -2,6 +2,7 @@
 
 # External Imports
 import pytest
+import torch
 
 # Local imports
 import nanograd_bgriebel as ng
@@ -69,3 +70,43 @@ class TestEngine:
         z.backwards()
         assert z.grad == pytest.approx(1.0), "Gradient wrt to self wasn't 1."
         assert x.grad == pytest.approx(0.0), "Gradient of ReLU(x), x<0, wrt x wasn't 0"
+
+    def test_complex_calc(self):
+        a = ng.Value(-4.0)
+        b = ng.Value(2.0)
+        c = a + b
+        d = a * b + b**3
+        c += c + 1
+        c += 1 + c + (-a)
+        d += d * 2 + (b + a).relu()
+        d += 3 * d + (b - a).relu()
+        e = c - d
+        f = e**2
+        g = f / 2.0
+        g += 10.0 / f
+        g.backwards()
+        amg, bmg, gmg = a, b, g
+
+        a = torch.Tensor([-4.0]).double()
+        b = torch.Tensor([2.0]).double()
+        a.requires_grad = True
+        b.requires_grad = True
+        c = a + b
+        d = a * b + b**3
+        c = c + c + 1
+        c = c + 1 + c + (-a)
+        d = d + d * 2 + (b + a).relu()
+        d = d + 3 * d + (b - a).relu()
+        e = c - d
+        f = e**2
+        g = f / 2.0
+        g = g + 10.0 / f
+        g.backward()
+        apt, bpt, gpt = a, b, g
+
+        tol = 1e-6
+        # forward pass went well
+        assert abs(gmg.data - gpt.data.item()) < tol
+        # backward pass went well
+        assert abs(amg.grad - apt.grad.item()) < tol
+        assert abs(bmg.grad - bpt.grad.item()) < tol

@@ -50,6 +50,7 @@ void add_engine(py::module_ &m) {
             .def(double() / py::self)
             .def(py::self / double())
             .def("__pow__", [](const Value &a, const double b) { return a.pow(b); })
+            .def("__neg__", [](const Value &a) { return -a; })
             .def("relu", &Value::relu);
 }
 
