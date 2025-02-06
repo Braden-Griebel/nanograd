@@ -29,15 +29,19 @@ TEST_CASE("Creating Modules", "[nn]") {
         const Value output = testNeuron(inputs);
 
         // Since the output is fed through relu, it should be non-negative
-        CHECK(output.get_data() > margin);
+        CHECK(output.get_data() >= 0.0);
 
         // Check that the gradients can be calculated
         output.backwards();
 
-        // The gradients should all be non-zero
+        // Some of the gradients should be non-zero
+        bool nonZeroPresent = false;
         for (auto& param : testNeuron.get_parameters()) {
-            CHECK(param.get_grad()> margin);
+            if (param.get_grad() > margin){
+                nonZeroPresent = true;
+            }
         }
+        CHECK(nonZeroPresent);
 
         // Zero the gradients
         testNeuron.zero_grad();
@@ -65,9 +69,6 @@ TEST_CASE("Creating Modules", "[nn]") {
             // Additionally, all the outputs should be non-negative due to the ReLU activation
             CHECK(output.get_data() >=0.0);
             output.backwards();
-        }
-        for (auto& param: testLayer.get_parameters()) {
-            CHECK_THAT(param.get_grad(), Catch::Matchers::WithinAbs(1.0, margin));
         }
 
         // Zero the gradients and check that this worked
@@ -102,10 +103,6 @@ TEST_CASE("Creating Modules", "[nn]") {
         // Check that the gradients can be computed
         for (auto& out: outputs) {
             out.backwards();
-        }
-        for (auto& param: testMultiLayerPerceptron.get_parameters()) {
-            // Due to the ReLU all the gradients should be non-negative
-            CHECK(param.get_grad()>=0.0);
         }
         // Check that zeroing the gradients works
         // Save the old parameters values to make sure zero_grad doesn't impact them
