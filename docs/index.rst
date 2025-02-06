@@ -18,4 +18,5 @@ networks. Nanograd-bgriebel is based on Andrej Karpathy's `micrograd`_.
    :maxdepth: 2
    :caption: Contents:
   
-   nanograd_bgriebel
+   engine
+   nn

@@ -20,6 +20,7 @@ dependencies = []
 Homepage = "https://github.com/Braden-Griebel/nanograd"
 Repository = "https://github.com/Braden-Griebel/nanograd"
 Issues = "https://github.com/Braden-Griebel/nanograd/issues"
+Documentation = "https://nanograd.readthedocs.io/en/latest/"
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"
