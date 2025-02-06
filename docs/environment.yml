@@ -1,0 +1,12 @@
+name: nanograd-docs
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - cmake
+  - python==3.13
+  - ca-certificates
+  - openssl
+  - compilers
+  - scikit-build-core
+  - pybind11
