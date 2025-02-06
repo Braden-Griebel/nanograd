@@ -3,6 +3,8 @@
 //
 #include <nn.h>
 
+#include <utility>
+
 Neuron::Neuron(const int nin, const bool nonlinear): b(Value{0.}), nonlinear(nonlinear) {
     // create a random number generator
     std::random_device rd;

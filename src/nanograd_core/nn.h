@@ -59,7 +59,7 @@ class Neuron final : public Module {
     /**
      * @brief Whether the output should be non-linear (via ReLU)
      */
-    bool nonlinear = true;
+    bool nonlinear;
 
 public:
     /**
@@ -67,7 +67,7 @@ public:
      * @param nin Number of inputs to the neuron
      * @param nonlinear Whether the neuron should use a non-linear activation function (ReLU)
      */
-    explicit Neuron(const int nin, const bool nonlinear);
+    explicit Neuron(int nin, bool nonlinear);
 
     /**
      * @brief Determine the activation of the neuron given an input

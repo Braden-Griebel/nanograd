@@ -1,5 +1,6 @@
 // Standard Library Includes
 #include <cmath>
+#include <iostream>
 
 // External Includes
 #include "catch2/catch_test_macros.hpp"
@@ -111,6 +112,27 @@ TEST_CASE("Creating Modules", "[nn]") {
         for (auto& param: testMultiLayerPerceptron.get_parameters()) {
             CHECK_THAT(param.get_grad(), Catch::Matchers::WithinAbs(0.0, margin));
         }
-
+//        std::vector sizes {16,16,1};
+//        MultiLayerPerceptron mlp {2, sizes};
+//        std::vector input1 {Value(1.574133), Value(-0.158067)};
+//        std::vector input2 {Value(1.867280), Value(-0.023587)};
+//        auto out1 = mlp(input1);
+//        auto out2 = mlp(input2);
+//        // Calculate the gradients
+//        out1[0].backwards();
+//        out2[0].backwards();
+//        // Modify the parameters based on their gradients
+//        for (auto &param : mlp.get_parameters()) {
+//          param.set_data(param.get_data() - param.get_grad()*0.001);
+//        }
+//        // Zero the gradients
+//        mlp.zero_grad();
+//        // Try with new input to try and recreate the issue with identical output
+//        std::vector input3 {Value(1.574133), Value(-0.158067)};
+//        std::vector input4 {Value(1.867280), Value(-0.023587)};
+//        auto out3 = mlp(input3);
+//        auto out4 = mlp(input4);
+//        std::cout << out3[0] <<std::endl;
+//        std::cout << out4[0] <<std::endl;
     }
 }
