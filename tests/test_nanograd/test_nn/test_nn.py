@@ -20,7 +20,7 @@ class TestNeuron:
         assert output.data >= 0
 
     def test_grads(self):
-        test_neuron = ng.Neuron(5, True)
+        test_neuron = ng.Neuron(5, False)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
         output = test_neuron(input_)
         output.backwards()
@@ -32,7 +32,7 @@ class TestNeuron:
         assert non_zero_grads
 
     def test_zeroing(self):
-        test_neuron = ng.Neuron(5, True)
+        test_neuron = ng.Neuron(5, False)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
         output = test_neuron(input_)
         output.backwards()
@@ -52,7 +52,7 @@ class TestLayer:
         assert len(test_layer.get_parameters()) == 25
 
     def test_calling(self):
-        test_layer = ng.Layer(4,5,True)
+        test_layer = ng.Layer(4,5,False)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
         outputs = test_layer(input_)
         for output in outputs:
@@ -60,7 +60,7 @@ class TestLayer:
             assert output.data >= 0
 
     def test_grads(self):
-        test_layer = ng.Layer(4,5,True)
+        test_layer = ng.Layer(4,5,False)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
         outputs = test_layer(input_)
         for output in outputs:
@@ -73,7 +73,7 @@ class TestLayer:
         assert non_zero_grads
 
     def test_zeroing(self):
-        test_layer = ng.Layer(4,5,True)
+        test_layer = ng.Layer(4,5,False)
         input_ = [ng.Value(1), ng.Value(1), ng.Value(1), ng.Value(1)]
         outputs = test_layer(input_)
         for output in outputs:
