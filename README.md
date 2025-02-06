@@ -67,4 +67,44 @@ print(a.grad) # The gradient of d with respect to a
 print(b.grad) # The gradient of b with respect to b
 ```
 
+## Examples
 
+The examples directory contains example notebooks (one for using the automatic differentiation engine
+one for using the neural network api). These can be run by installing the requirements in the requirements.txt file
+(again, it is suggested to use a virtual environment). 
+  
+From inside the examples directory:
+```{shell}
+# Create a virtual environment
+python -m venv .venv # Creates a virtual environment called .venv
+# Activate (Linux)
+source .venv/bin/activate
+# Activate (Windows)
+.\.venv\env\scripts\activate
+# Then you can install using pip
+pip install -r ./requirements.txt
+```
+or
+
+```{shell}
+# Create a virtual environment
+uv venv
+# Activate (Linux)
+source .venv/bin/activate
+# Activate (Windows)
+.\.venv\env\scripts\activate
+# Install using uv
+uv pip install -r requirements.txt
+```
+  
+The notebooks can then be opened in jupyter lab or jupyter notebooks   
+
+```{shell}
+jupyter lab /path/to/jupyter/notebook
+```
+
+or 
+
+```{shell}
+jupyter notebook jupyter lab /path/to/jupyter/notebook
+```
