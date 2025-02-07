@@ -7,7 +7,7 @@ authors = [{ name = "Braden Griebel", email = "bgriebel@uw.edu" }]
 license = { file = "LICENSE" }
 keywords = ["Automatic Differentiation", "Neural Network", "Machine Learning"]
 classifiers = [
-  "Developement Status :: 3 - Alpha",
+  "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -32,10 +32,10 @@ build-backend = "scikit_build_core.build"
 
 [dependency-groups]
 dev = [
-  "numpy>=2.2.2", # So that torch doesn't throw a warning
+  "numpy>=2.2.2",      # So that torch doesn't throw a warning
   "pre-commit>=4.1.0", # Running checks before commit 
-  "pytest>=8.3.4", # Testing
-  "ruff>=0.9.4", # Linting
-  "sphinx>=8.1.3", # For creating docs
-  "torch>=2.6.0", # Used for testing
+  "pytest>=8.3.4",     # Testing
+  "ruff>=0.9.4",       # Linting
+  "sphinx>=8.1.3",     # For creating docs
+  "torch>=2.6.0",      # Used for testing
 ]
