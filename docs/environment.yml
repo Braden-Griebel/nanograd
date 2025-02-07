@@ -10,4 +10,4 @@ dependencies:
   - compilers
   - scikit-build-core
   - pybind11
-  - pip>=24.0
+  - pip>=25.0
