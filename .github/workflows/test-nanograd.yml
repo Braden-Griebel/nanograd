@@ -2,7 +2,7 @@ name: Test Nanograd
 on:
   push:
     branches:
-      - "none"
+      - "main"
       - "dev"
     tags-ignore:
       - "**"

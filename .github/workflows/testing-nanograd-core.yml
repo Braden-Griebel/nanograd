@@ -3,7 +3,7 @@ name: Test Nanograd Core
 on:
   push:
     branches:
-      - none
+      - main
 jobs:
   test:
     runs-on: ${{ matrix.os }}
